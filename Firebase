@@ -1,0 +1,12 @@
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference();
+    DatabaseReference Reff = myRef.child("Anything");
+    
+      btn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Reff.child(currentLocalTime.toString()).setValue("Anything");
+                openDialog();
+                restart();
+            }
+        });
