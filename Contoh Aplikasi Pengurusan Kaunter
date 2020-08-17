@@ -1,11 +1,17 @@
 package com.example.sistempengurusankaunter;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -19,7 +25,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -29,63 +38,102 @@ public class MainActivity extends AppCompatActivity {
 
     Button btn1, btn2, btn3;
 
+    //Firebase
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference();
+
+    //Firehase Child reff
     DatabaseReference pilihan = myRef.child("Pengguna").child("Pilihan");
+    DatabaseReference admin = myRef.child("Admin");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Hide status bar
         getSupportActionBar().hide();
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setContentView(R.layout.activity_main);
 
+        //Fullscreen
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
             w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
 
-
-        //Calendar calendar = Calendar.getInstance();
-        //final String currentDate = DateFormat.getDateInstance().format(calendar.getTime());
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"),
-                Locale.getDefault());
+        //Get date & time
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"), Locale.getDefault());
         final Date currentLocalTime = calendar.getTime();
-
-        reff = FirebaseDatabase.getInstance().getReference().child("Pengguna").child("Pilihan");
 
         btn1 = findViewById(R.id.button1);
         btn2 = findViewById(R.id.button2);
         btn3 = findViewById(R.id.button3);
 
+        //BUTTON 1
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pilihan.child(currentLocalTime.toString()).setValue("BUANG HARGA");
+                String value = btn1.getText().toString();
+
+                //Delayed refresh activity
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        restart();
+                    }
+                }, 3000);
+
+                //Set value firebase
+                pilihan.child(currentLocalTime.toString()).setValue(value);
+                admin.setValue(value);
                 openDialog();
-                restart();
             }
         });
 
+        //BUTTON 2
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pilihan.child(currentLocalTime.toString()).setValue("PENGHANTARAN SURAT");
+                String value2 = btn2.getText().toString();
+
+                //Delayed refresh activity
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        restart();
+                    }
+                }, 3000);
+
+                //Set value firebase
+                pilihan.child(currentLocalTime.toString()).setValue(value2);
+                admin.setValue(value2);
                 openDialog();
-                restart();
             }
         });
 
+        //BUTTON 3
         btn3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pilihan.child(currentLocalTime.toString()).setValue("PERJUMPAAN");
+                String value3 = btn3.getText().toString();
+
+                //Delayed refresh activity
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        restart();
+                    }
+                }, 3000);
+
+                //Set value firebase
+                pilihan.child(currentLocalTime.toString()).setValue(value3);
+                admin.setValue(value3);
                 openDialog();
-                restart();
             }
         });
     }
 
+    //Restart method
     private void restart() {
         Intent restart = new Intent(MainActivity.this, MainActivity.class);
         startActivity(restart);
@@ -93,8 +141,10 @@ public class MainActivity extends AppCompatActivity {
         overridePendingTransition(0, 0);
     }
 
+    //Show dialog@info
     private void openDialog() {
         Dialog dialog = new Dialog();
         dialog.show(getSupportFragmentManager(), "dialog");
     }
+
 }
