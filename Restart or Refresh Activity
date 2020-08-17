@@ -1,0 +1,7 @@
+//Restart method
+    private void restart() {
+        Intent restart = new Intent(MainActivity.this, MainActivity.class);
+        startActivity(restart);
+        finish();
+        overridePendingTransition(0, 0);
+    }
