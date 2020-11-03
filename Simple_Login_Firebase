@@ -1,0 +1,159 @@
+public class LoginActivity extends AppCompatActivity {
+
+    private EditText mail, pass;
+    private Button btnLogin;
+    private FirebaseAuth mAuth;
+    boolean doubleBackToExitPressedOnce = false;
+
+    private DatabaseReference mReference;
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference myRef = database.getReference();
+    private DatabaseReference admin = myRef.child("Admin").child("mail");
+    private DatabaseReference adminUser = myRef.child("Admin").child("user").child("mail");
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+        setTitle("Login");
+
+        mail = (EditText) findViewById(R.id.editTextTextEmailAddress);
+        pass = (EditText) findViewById(R.id.editTextTextPassword);
+        btnLogin = (Button) findViewById(R.id.btnLogin);
+        mAuth = FirebaseAuth.getInstance();
+        findViewById(R.id.progressBar).setVisibility(View.GONE);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // User is signed in
+            Intent i = new Intent(LoginActivity.this, TabActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
+        }
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final String email = mail.getText().toString().trim();
+                String password = pass.getText().toString().trim();
+                findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+                btnLogin.setVisibility(View.GONE);
+
+                if (TextUtils.isEmpty(email)) {
+                    mail.setError("This field is required");
+                }
+                if (TextUtils.isEmpty(password)) {
+                    pass.setError("This field is required");
+                }
+
+                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull final Task<AuthResult> task) {
+
+                        admin.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                String user = snapshot.getValue().toString();
+                                if (email.equals(user) & task.isSuccessful()) {
+                                    startMainAct();
+                                    Toast.makeText(LoginActivity.this, "Selamat Datang Admin", Toast.LENGTH_SHORT).show();
+                                }
+                                if (!email.equals(user) & !task.isSuccessful() || !email.equals(user) & task.isSuccessful()) {
+                                    findViewById(R.id.progressBar).setVisibility(View.GONE);
+                                    btnLogin.setVisibility(View.VISIBLE);
+                                    showErrorNotAdmin();
+                                }
+                                if (email.equals(user) & !task.isSuccessful()) {
+                                    findViewById(R.id.progressBar).setVisibility(View.GONE);
+                                    btnLogin.setVisibility(View.VISIBLE);
+                                    showError();
+                                }
+
+                                /*if (!task.isSuccessful()){
+                                    showError();
+                                }*/
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+
+
+                        /*if (task.isSuccessful()) {
+                            Toast.makeText(LoginActivity.this, "Login Succesfull", Toast.LENGTH_SHORT).show();
+                            startMainAct();
+                        }
+                        if (!mAuth.getCurrentUser().isEmailVerified()) {
+                            Toast.makeText(LoginActivity.this, "Please Register First", Toast.LENGTH_SHORT).show();
+                        }*/
+                    }
+                });
+            }
+        });
+
+
+    }
+    
+    //Method for exit app
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce = false;
+            }
+        }, 2000);
+    }
+
+    private void showErrorNotAdmin() {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        builder1.setMessage("Ralat Masuk\n\nAnda bukan Admin!");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Okay",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+    }
+
+    private void showError() {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        builder1.setMessage("Ralat Masuk\n\nSila periksa e-mel atau kata laluan anda");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Okay",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+    }
+
+    private void startMainAct() {
+        Intent intent = new Intent(LoginActivity.this, TabActivity.class);
+        startActivity(intent);
+        finish();
+        return;
+    }
+}
