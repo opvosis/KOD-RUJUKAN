@@ -68,10 +68,6 @@ public class LoginActivity extends AppCompatActivity {
                                     btnLogin.setVisibility(View.VISIBLE);
                                     showError();
                                 }
-
-                                /*if (!task.isSuccessful()){
-                                    showError();
-                                }*/
                             }
 
                             @Override
@@ -79,15 +75,6 @@ public class LoginActivity extends AppCompatActivity {
 
                             }
                         });
-
-
-                        /*if (task.isSuccessful()) {
-                            Toast.makeText(LoginActivity.this, "Login Succesfull", Toast.LENGTH_SHORT).show();
-                            startMainAct();
-                        }
-                        if (!mAuth.getCurrentUser().isEmailVerified()) {
-                            Toast.makeText(LoginActivity.this, "Please Register First", Toast.LENGTH_SHORT).show();
-                        }*/
                     }
                 });
             }
