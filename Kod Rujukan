@@ -1,0 +1,123 @@
+public class MainActivity extends AppCompatActivity {
+
+    private Button Buka, Lgt;
+    private SwipeButton swipeButton;
+    private FirebaseUser userAuth = FirebaseAuth.getInstance().getCurrentUser();
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference myRef = database.getReference();
+    private DatabaseReference UserReport = myRef.child("Pintu").child("User").child("Buka");
+    private DatabaseReference userBuka = myRef.child("Admin").child("Pintu").child("user");
+    private DatabaseReference user = myRef.child("Admin").child("user").child("userID");
+    private FirebaseAuth mAuth;
+
+    private TextView txtUser;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        txtUser = (TextView) findViewById(R.id.userNametxt);
+        String userName = userAuth.getDisplayName();
+        txtUser.setText("SELAMAT DATANG : \n\n" + userName);
+    }
+
+    @Override
+    public void onBackPressed() {
+        showExitDialog();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.logOut:
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.logout, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        //Get date & time
+        TimeZone tz = TimeZone.getTimeZone("GMT+8");
+        Calendar c = Calendar.getInstance(tz);
+        final String time = String.format("%02d", c.get(Calendar.HOUR_OF_DAY)) + ":" +
+                String.format("%02d", c.get(Calendar.MINUTE)) + ":" + String.format("%02d", c.get(Calendar.SECOND));
+
+        final Calendar instance = Calendar.getInstance(TimeZone.getDefault());
+        final SimpleDateFormat month_date = new SimpleDateFormat("MM");
+        final SimpleDateFormat numDay = new SimpleDateFormat("dd");
+        final String currentDay = numDay.format(instance.getTime());
+        final String currentMonth = month_date.format(instance.getTime());
+        final String currentYear = String.format("%02d", instance.get(Calendar.YEAR));
+
+        mAuth = FirebaseAuth.getInstance();
+        final String key = userBuka.push().getKey();
+        final String user = mAuth.getCurrentUser().getEmail();
+
+        swipeButton = findViewById(R.id.swipe_btn);
+        swipeButton.setOnStateChangeListener(new OnStateChangeListener() {
+            @Override
+            public void onStateChange(final boolean active) {
+                if(active==true){
+                    swipeButton.setButtonBackground(ContextCompat.getDrawable(getBaseContext(), R.drawable.swipe_shape2));
+                    String user = mAuth.getCurrentUser().getEmail();
+                    final String key1 = UserReport.push().getKey();
+                    userBuka.setValue("BUKA");
+                    UserReport.child("Report").child(key1).child("Email").setValue(user);
+                    UserReport.child("Report").child(key1).child("Tarikh").setValue(currentDay+"/"+currentMonth+"/"+currentYear);
+                    UserReport.child("Report").child(key1).child("Masa").setValue(time);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            userBuka.setValue("");
+                            swipeButton.toggleState();
+                        }
+                    }, 5000);
+                }if (active==false){
+                    swipeButton.setButtonBackground(ContextCompat.getDrawable(getBaseContext(), R.drawable.swipe_shape));
+                }
+            }
+        });
+
+    }
+
+    private void showExitDialog() {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        builder1.setMessage("Pengesahan\n\nAnda mahu menutup aplikasi?");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Okay",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        finish();
+                    }
+                });
+
+        builder1.setNegativeButton(
+                "Tidak",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+    }
+
