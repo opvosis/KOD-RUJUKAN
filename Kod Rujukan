@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         swipeButton.setOnStateChangeListener(new OnStateChangeListener() {
             @Override
             public void onStateChange(final boolean active) {
+                //Proses set value ke Firebase
                 if(active==true){
                     swipeButton.setButtonBackground(ContextCompat.getDrawable(getBaseContext(), R.drawable.swipe_shape2));
                     String user = mAuth.getCurrentUser().getEmail();
